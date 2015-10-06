@@ -6,20 +6,21 @@ Note - it is not supposed to run as a script !
 import time
 import threading
 import Tkinter
+from Tkinter import *
 import ttk
 
-# Simple threading example
-def do_work():
-    print 'start work'
-    time.sleep(5)
-    print 'work done'
+def threading_example():
+    def do_work():
+        print 'start work'
+        time.sleep(5)
+        print 'work done'
 
-worker = threading.Thread(target=do_work)
-worker.start()
-while worker.is_alive():
-    # notice race condition when thread and while loop attempts to write string
-    print 'thread is running'
-    time.sleep(2)
+    worker = threading.Thread(target=do_work)
+    worker.start()
+    while worker.is_alive():
+        # notice race condition when thread and while loop attempts to write string
+        print 'thread is running'
+        time.sleep(2)
 
 # Tkinter, TK
 class ThreadClient(threading.Thread):
@@ -36,7 +37,7 @@ class TestGui(Frame):
         Frame.__init__(self, parent, *args)
         self.pack()
         self.make_widgets()
-        self.mainloop()
+        # self.mainloop()
 
     def make_widgets(self):
         btn = Button(self, text='Run test', command=self.run_test)
@@ -86,7 +87,7 @@ class Foo(object):
             val = 'empty'
         self.__arg = val
 
-bob = Foo('abc')
-print bob.arg
-bob.arg = None
-print bob.arg
+# bob = Foo('abc')
+# print bob.arg
+# bob.arg = None
+# print bob.arg

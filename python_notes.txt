@@ -171,6 +171,9 @@ Move keys added - ctrl + i, j, k, l
 
 Delete word ctrl + backspace/delete
 
+Slurp find string ctrl + E (highlight all strings matching the one under
+cursor), use f3 and shift + f3 to move between occurences
+
 Less mouse, better productivity
 
 =============================

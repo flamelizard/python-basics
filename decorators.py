@@ -67,6 +67,10 @@ I still do not know how to take advantage of *decorators* but it is apparently
 big thing remotely similar to discovery of OO.
 AFAIK, python's famous frameworks heavily relies on decorators as Twisted and
 Flask.
+
+[Source 1](http://thecodeship.com/patterns/guide-to-python-function-decorators/)
+[Source 2](http://www.python-academy.com/download/ep14deco/iter_gen_dec_handout.pdf)
+[Cheatsheet](http://www.pydanny.com/python-decorator-cheatsheet.html)
 """
 
 def new_car(model):
@@ -75,8 +79,8 @@ def new_car(model):
 print new_car('Nissan GTR')
 
 def bodywork_decorator(car_func):
-    # returns ref on func that expects arg 'model'
-    # arg passed when called as a function later
+    # define nested function and return reference (it does not run here)
+    # nested function will require args necessary for fuction to be decorated
     def bodywork(model):
         return 'Blue rimms, carbon hood on {0}'.format(car_func(model))
     return bodywork
