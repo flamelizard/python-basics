@@ -42,15 +42,18 @@ class TestGui(Frame):
     def make_widgets(self):
         btn = Button(self, text='Run test', command=self.run_test)
         te = Text(self, width=10, height=10)
+        ca = Canvas(self, width=50, height=50, bg='blue')
         te.insert(END, 'text box 1')
         pbar = ttk.Progressbar(self, mode='indeterminate')
 
         btn.pack()
         te.pack()
+        ca.pack()
         pbar.pack()
 
         self.btn = btn
         self.te = te
+        self.ca = ca
         self.pbar = pbar
 
     def refresh_pbar(self):

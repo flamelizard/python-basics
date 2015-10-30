@@ -9,12 +9,26 @@ logger.setLevel(logging.DEBUG)
 ===============================
 Python pitfalls
 
+## String operation does not work on number
 Number is an integer and cannot be used alone with string operations like
 join etc. Cast number to string (object) to treat it as a string.
 
-nums = [1, 2, 3]
-num_st = map(str, nums)
-num_st = [str(num) for num in nums]
+    nums = [1, 2, 3]
+    num_st = map(str, nums)
+    num_st = [str(num) for num in nums]
+
+## Comparison string number and number >, <
+Very tricky !! Python does not convert string to number !! Python 3.x will
+trigger exception for such comparison.
+
+Basically, if comparison condition has string as one of operands, it will do
+sort of lexical comparison where number should come before string to be true.
+
+    if '10' < 5:
+        print 'Always true since string comes after number'
+    if 100 > '1000':
+        print 'Always true'
+
 
 =================================
 Python design rules
@@ -245,3 +259,22 @@ def test_range_overlap():
 Function parameters will become local variable
 
 Enclosing scope - inner function has access to variables in outer function, at least read and sometimes modify access
+
+## Python auto-complete
+Autocomplete works fine for object created directly from class. However, it
+will not work when object instance is created by a method call. This is a
+disadvantage of dynamically linked langs. It would be too difficult for IDE to
+figure out what is the class of a instance object.
+
+This issue is present on all editors as far as I know - Sublime, PyCharm, PyDev
+in Eclipse.
+
+However, it will work fine when you tell IDE what kind of class is the object.
+
+1. Find object's class
+    obj.__class__ , or type(obj).__class__.__name__
+
+2. Tell IDE
+    assert isinstance(obj, 'className')
+
+3. Next line after assert should give all suggestions
