@@ -8,13 +8,15 @@ error 'no host given'
     urlunparse returned scheme with '///' instead of '//'
 
 TODO
-way to search through python standard lib to find quickly reaal world usage of
+way to search through python standard lib to find quickly real world usage of
 some pattern like @property, print first 10 or random lines
 """
 import urlparse
 import urllib2
 import bs4
 from collections import defaultdict
+import tinycss
+import tinycss.color3
 
 def print_attrib(o):
     lst = []
@@ -45,6 +47,68 @@ class WebScrape(object):
             self.soup = None
         self._url = self.normalize_url(addr)
         self.scrape_page()
+
+    def test(self):
+        raw = self.get_external_style()
+        # parser = tinycss.make_parser()
+        # stylesheet = parser.parse_stylesheet(raw)
+        # for rule in stylesheet.rules[:2]:
+        #     selector = rule.selector.as_css()
+        #     print selector
+        #     for declar in rule.declarations:
+        #         print declar.value, declar.name
+        print self.parse_backgr_color(raw)
+
+    def _parse_css(self, raw_css):
+        """Simply example on using tinycss
+
+        Print properties for selector 'body'
+        Refer to link below for exact CSS terminology, important to use module
+        effectively.
+        http://www.w3.org/TR/CSS21/syndata.html#tokenization
+
+        :raw_css
+            css stylesheet as unicode string
+        """
+        # parser defaults to CSS2.1
+        parser = tinycss.make_parser()
+        # parser can accept data through multiple ways
+        stylesheet = parser.parse_stylesheet(raw_css)
+        # rule set (or rule) is a selector and declarations block
+        # e.g 'html' { font-size: 1px; font-color: 'green'}
+        for rule in stylesheet.rules:
+            # data units are often in form of class Token
+            #.as_css() returns string repr
+            if rule.selector.as_css() == 'body':
+                for declar in rule.declarations:
+                    # assert isinstance(declar.value, tinycss.token_data.TokenList)
+                    print '%s -> %s' % (declar.name, declar.value.as_css())
+
+    def parse_backgr_color(self, raw_css):
+        """
+        :return tuple rgb() for 'html' or 'body', None for no color
+        """
+        parser = tinycss.make_parser()
+        stylesheet = parser.parse_stylesheet(raw_css)
+        for rule in stylesheet.rules:
+            if rule.selector.as_css() in ['html', 'body']:
+                for declar in rule.declarations:
+                    # assert isinstance(declar.value, tinycss.token_data.TokenList)
+                    if declar.name == 'background-color':
+                        # parse color value to single format as tuple rgb()
+                        return tinycss.color3.parse_color(declar.value[0])
+                        # return declar.value.as_css()
+        return None
+
+    def rgb_to_hexa(self, color):
+        """Convert color from rgb() to hexadecimal
+
+        :color tuple rgb(), each value in range 0-1
+        """
+        hexa = ''
+        for col in color[:3]:
+            hexa += '{:02x}'.format(int(col * 255))
+        return '#{}'.format(hexa)
 
     def scrape_page(self):
         """Download and slurp markup to var soup"""
@@ -147,5 +211,5 @@ if __name__ == '__main__':
     for elem in elems:
         print elem
 
-    scraper.url = 'bob'
-    print scraper.soup
+    # test
+    scraper.test()

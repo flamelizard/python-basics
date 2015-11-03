@@ -46,6 +46,9 @@ CURRENT - mouse cursor position
 
 .mark_set()
 
+TAKEAWAY
+Structured logging to allow spotting bottle-neck with nice messages, but how ??
+
 """
 
 from Tkinter import *
@@ -58,6 +61,7 @@ import data_structures
 import os
 from PIL import Image, ImageTk
 import urlparse
+import webscrape
 
 # import sys
 # reload(sys)
@@ -75,7 +79,7 @@ class Browser(Frame):
             'small': ('Verdana', 10),
             'em': ('Verdana', 10, 'italic'),
             'img': None,
-            'a': None,
+            # 'a': None,
         }
         self.style_def = ('Verdana', 10)
         self.images = []
@@ -141,49 +145,21 @@ class Browser(Frame):
         # worker = threading.Thread(target=lambda: self.get_page(addr))
         # # worker must put any value to self.queue to call out finish
         # worker.start()
-        self.get_page()
+        # self.get_page()
+        scraper = webscrape.WebScrape(self.addr)
+        render_tags = self.elem_style.keys()
+        render_tags.sort()
+        scraped = scraper.parse_tags_sequentially(render_tags)
+        self.show_on_canvas(scraped)
 
-    def get_page(self):
-        # time.sleep(10)
-        pref = 'file://' if self.addr.find('localhost') != -1 else 'http://'
-        self.url = pref + self.addr
-        reply = urllib2.urlopen(self.url)
-        html = reply.read()
-        reply.close()
-        # print self.url, reply, dir(reply)
-
-        on_display = []
-        soup = bs4.BeautifulSoup(html, 'lxml')
-        # print '[charset]', soup.original_encoding
-        # soup.prettify()
-
-        css_urls = self.parse_ext_css(soup)
-        print '[css links]', css_urls
-
-        txt = self.parse_html_soup(soup)
-        # print '[parsed]', txt
-        self.show_on_canvas(txt)
-
-    def parse_ext_css(self, soup):
-        """Return list of urls to external css files"""
-        urls = []
-        for link in soup.findAll('link', rel='stylesheet', href=True):
-            url = urlparse.urljoin(self.url, link['href'])
-            urls.append(url)
-        return urls
-
-    def parse_html_soup(self, soup):
-        """Parse supported elements from html sequencially
-
-        :return list of tuples (element object, text styling)
-        """
-        parsed = []
-        for elem in soup.body.next_elements:
-            if elem.name not in self.elem_style:
-                continue
-            # line = (elem, self.elem_style[elem.name])
-            parsed.append(elem)
-        return parsed
+        # set background color from css
+        raw_css = scraper.get_external_style()
+        if raw_css:
+            color = scraper.parse_backgr_color(raw_css)
+            if color:
+                _color = scraper.rgb_to_hexa(color).upper()
+                # print '[page color] ', color, _color
+                self.ca.config(bg=_color)
 
     def show_on_canvas(self, lines):
         pos_x = 10
