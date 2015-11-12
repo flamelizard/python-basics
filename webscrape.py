@@ -1,16 +1,18 @@
 """
-download web page
-donwload css files
-parse elements in list
+webscrape.py
 
-urlopen
-error 'no host given'
+Class WebScrape to scrape off HTML/CSS content on a single page
+- donwload content
+- parse content for custom tags
+
+Errors
+urllib2, error 'no host given'
     urlunparse returned scheme with '///' instead of '//'
 
-TODO
-way to search through python standard lib to find quickly real world usage of
-some pattern like @property, print first 10 or random lines
+Raises
+    urllib2.URLError
 """
+
 import urlparse
 import urllib2
 import bs4
@@ -18,24 +20,13 @@ from collections import defaultdict
 import tinycss
 import tinycss.color3
 
-def print_attrib(o):
-    lst = []
-    for attr in dir(o):
-        try:
-            val = str(getattr(o, attr))
-            lst.append((attr, val))
-        except AttributeError:
-            pass
-    for attr, val in lst:
-        print '%s -> %s' % (attr, val)
-
 class WebScrape(object):
-    def __init__(self, addr):
+    def __init__(self, addr, get_now=None):
         self._url = self.normalize_url(addr)
         self.soup = None
         self.parser = 'lxml'
-        # print '[attrib]', self.url
-        self.scrape_page()
+        if get_now:
+            self.scrape_page()
 
     @property
     def url(self):
@@ -49,15 +40,15 @@ class WebScrape(object):
         self.scrape_page()
 
     def test(self):
-        raw = self.get_external_style()
-        # parser = tinycss.make_parser()
-        # stylesheet = parser.parse_stylesheet(raw)
-        # for rule in stylesheet.rules[:2]:
-        #     selector = rule.selector.as_css()
-        #     print selector
-        #     for declar in rule.declarations:
-        #         print declar.value, declar.name
-        print self.parse_backgr_color(raw)
+        pass
+
+    def test_load_raw_html(self, html):
+        """Use raw html instead of downloading a page
+
+        Supposed for unittest only
+        """
+        if html:
+            self.soup = self.parse_html(html)
 
     def _parse_css(self, raw_css):
         """Simply example on using tinycss
@@ -110,15 +101,12 @@ class WebScrape(object):
             hexa += '{:02x}'.format(int(col * 255))
         return '#{}'.format(hexa)
 
-    def scrape_page(self):
+    def scrape_page(self, raw_html=None):
         """Download and slurp markup to var soup"""
         html = self.download_page()
         if html:
             self.soup = self.parse_html(html)
         # print self.soup.prettify()
-        # print self.get_external_style()
-        # print self.get_inline_style()
-        # print self.parse_tags(['p', 'a'])
 
     def normalize_url(self, url):
         """
@@ -139,11 +127,7 @@ class WebScrape(object):
         """
         if not url:
             url = self.url
-        try:
-            reply = urllib2.urlopen(url=url)
-        except urllib2.URLError as e:
-            print 'Error: %s' % e.reason
-            return None
+        reply = urllib2.urlopen(url=url)
         # assert isinstance(reply, urllib2.addinfourl)
         html = reply.read()
         reply.close()
@@ -152,11 +136,10 @@ class WebScrape(object):
     def parse_html(self, html):
         return bs4.BeautifulSoup(html, self.parser)
         # print '[charset]', soup.original_encoding
-        # soup.prettify()
 
     def get_external_style(self):
         """
-        :return stylesheet as string
+        :return stylesheet as string or None
         """
         refs = []
         for link in self.soup.find_all('link', rel='stylesheet', href=True):
@@ -168,8 +151,11 @@ class WebScrape(object):
                 refs.append(o.geturl())
         raw_css = ''
         for ref in refs:
-            raw_css += self.download_page(ref)
-        return raw_css
+            # print '[ref]', ref
+            _css = self.download_page(ref)
+            if _css:
+                raw_css += _css
+        return raw_css if raw_css else None
 
     def get_inline_style(self):
         """
@@ -206,10 +192,8 @@ class WebScrape(object):
 
 if __name__ == '__main__':
     scraper = WebScrape('file:///D:/git-repos/test_site/index.html')
-    # scraper = WebScrape('file:///D:/git-repos/test_site/css_robot.html')
     elems = scraper.parse_tags_sequentially(['h1', 'h2', 'p'])
     for elem in elems:
         print elem
-
     # test
     scraper.test()
