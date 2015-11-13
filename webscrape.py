@@ -5,12 +5,13 @@ Class WebScrape to scrape off HTML/CSS content on a single page
 - donwload content
 - parse content for custom tags
 
-Errors
-urllib2, error 'no host given'
-    urlunparse returned scheme with '///' instead of '//'
-
 Raises
     urllib2.URLError
+    ValueError for malformed url
+
+Fixes
+urllib2, error 'no host given'
+    urlunparse returned scheme with '///' instead of '//'
 """
 
 import urlparse
@@ -21,8 +22,8 @@ import tinycss
 import tinycss.color3
 
 class WebScrape(object):
-    def __init__(self, addr, get_now=None):
-        self._url = self.normalize_url(addr)
+    def __init__(self, addr, get_now=True):
+        self._url = addr
         self.soup = None
         self.parser = 'lxml'
         if get_now:
@@ -36,7 +37,7 @@ class WebScrape(object):
     def url(self, addr):
         if hasattr(self, 'soup'):
             self.soup = None
-        self._url = self.normalize_url(addr)
+        self._url = addr
         self.scrape_page()
 
     def test(self):
@@ -118,8 +119,8 @@ class WebScrape(object):
         """
         o = urlparse.urlparse(url)
         if not o.scheme:
-            url = 'http://' + url
-        return url
+            o = o._replace(scheme='http', netloc=o.path, path='')
+        return o.geturl()
 
     def download_page(self, url=None):
         """
@@ -127,7 +128,7 @@ class WebScrape(object):
         """
         if not url:
             url = self.url
-        reply = urllib2.urlopen(url=url)
+        reply = urllib2.urlopen(url=self.normalize_url(url))
         # assert isinstance(reply, urllib2.addinfourl)
         html = reply.read()
         reply.close()
@@ -144,11 +145,12 @@ class WebScrape(object):
         refs = []
         for link in self.soup.find_all('link', rel='stylesheet', href=True):
             o = urlparse.urlparse(link['href'])
-            # is relative link?
+            # is link relative?
             if not o.scheme and not o.netloc:
                 refs.append(urlparse.urljoin(self.url, o.path))
             else:
                 refs.append(o.geturl())
+            # print '[link]', o, o.geturl()
         raw_css = ''
         for ref in refs:
             # print '[ref]', ref

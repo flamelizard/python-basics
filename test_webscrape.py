@@ -6,7 +6,7 @@ import bs4
 
 class WebscrapeTester(unittest.TestCase):
     def setUp(self):
-        self.scrape = webscrape.WebScrape('test_address')
+        self.scrape = webscrape.WebScrape('test_address', get_now=False)
         self.scrape.test_load_raw_html(test_html)
 
     # Pass to assertRaises ref to function !
