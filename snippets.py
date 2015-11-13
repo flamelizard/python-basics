@@ -94,3 +94,11 @@ class Foo(object):
 # print bob.arg
 # bob.arg = None
 # print bob.arg
+
+# Tkinter
+
+def style_text_in_Text_widget():
+    te = Text()
+    font = ('Verdana', 10, 'bold')
+    te.tag_config('tag1', font)
+    te.insert(INSERT, 'styled text', 'tag1')

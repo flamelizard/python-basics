@@ -1,13 +1,5 @@
 ===============================
-What is this?
-
-Found at the top of sublime text libs:
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler(sys.stdout))
-logger.setLevel(logging.DEBUG)
-
-===============================
-Python pitfalls
+# Python pitfalls
 
 ## String operation does not work on number
 Number is an integer and cannot be used alone with string operations like
@@ -31,13 +23,7 @@ sort of lexical comparison where number should come before string to be true.
 
 
 =================================
-Python design rules
-
-Function should be a black box that gets values and returns other values,
-without relying on global vars
-
-=================================
-TKinter Text widget - quick getting to know
+# TKinter Text widget - quick getting to know
 
 Text()
 .delete,insert,set_focus,get
@@ -55,15 +41,21 @@ Cannot style color and the likes since this is provide by Windows Styles
 Embedd widget to Text widget
 text.window_create(END, window=pbar)
 
-Tied vars in Tkinter
-====================
+Because Tkinter is single threaded, I cannot update GUI from another than main
+thread, otherwise unexpected behaviour.
+
+Cursor built-in tags to move cursor:
+INSERT ('insert') - insertion cursor
+CURRENT - mouse cursor position
+
+## Tied vars in Tkinter
+
 Updating var will update tied widget and vice versa. Useful when object is
 destroyed but var still holds data.
 var1 = StringVar(), IntVar()...
 .config(textvariable=var1)
 
-===============
-Log to Tk widget
+## Log to Tk widget
 
 Subclass logging.Handler and override method 'emit' with own reporting
 Logging module is great way to handle logging accross standard and third party
@@ -72,8 +64,8 @@ TODO READ
 I shoud later study whole manual on offical python doc to get a good grasp of
 all available features.
 
-===============
-ProgressBar from ttk
+## ProgressBar from ttk
+
 Pbar change status in GUI only when GUI is in control. When there is function
 running, GUI will update pbar once the fuction has given up control.
 
@@ -94,8 +86,23 @@ Use threading module to create worker threads.
 No, this is strange. Determinate mode animates pbar instantly but indeterminate
 waits while function is running and then starts animating !!
 
-================
-Singleton
+## GUI in General
+
+To have resposive GUI, every operation should run as a thread so
+GUI remains responsive all the time. However, Tkinter GUI should not be
+updated from non-main thread since Tkinter is not thread-safe and may lead to
+unexpected behaviour / crash. Worker thread should communicate changes to main
+thread via other mechanism like class Queue etc.
+
+Any running function blocks GUI waiting to take over control again.
+
+=================================
+# Python design rules
+
+Function should be a black box that gets values and returns other values,
+without relying on global vars
+
+## Singleton
 
 It is design pattern for object that allows only one instance of an object.
 First instantiation wll create object as usual. However, another call to
@@ -104,25 +111,26 @@ constructor will return reference to the first and only instance.
 This can be usefull when control should be centralized to single object.
 However, this technique has opponents too.
 
-# example of singleton design
-class MySingleton(object):
-    _instance = None
-    def __new__(self):
-        if not _instance:
-            _instance = super(MySingleton).__new__(self)
-        return _instance
+Example of singleton design
+
+    class MySingleton(object):
+        _instance = None
+        def __new__(self):
+            if not _instance:
+                _instance = super(MySingleton).__new__(self)
+            return _instance
 
 Class Logger from logging is singleton to support global control and config.
 
-=================
-Module logging - best practices
+
+# Module logging - best practices
 
 Library/modules should only create logger with module name.
 No configuration in terms of level etc !! This is necessary for easy
 incorporation to another applications.
 
-# logger has module name to easy distinguish log's source
-# Another loggers in module should use format e.g '__name__.classA'
+logger has module name to easy distinguish log's source
+Another loggers in module should use format e.g '__name__.classA'
 log = logging._getLogger(__name__)
 
 No need to keep reference to a log object since it is singleton.
@@ -130,14 +138,14 @@ No need to keep reference to a log object since it is singleton.
 Additonally, use NullHandler to prevent warning message when logging is not
 configured:
 
-import logging
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+    import logging
+    log = logging.getLogger(__name__)
+    log.addHandler(logging.NullHandler())
 
 http://pieces.openpolitics.com/2012/04/python-logging-best-practices/
 
-Logger level
-------------
+## Logger level
+
 Level is determined from logger. If not set, checks its parent, eventually
 reaching root logger that has default level set to WARNING.
 
@@ -152,14 +160,9 @@ Message also propagates to parent loggers - option to disable it.
 logging.info() - to root logger
 logger1.info() - to module-level logger (from call to .getLogger(name))
 
-=======================
-OO
-
-__name__ inside class gives still name of module, NOT the name of class
-
-
 ========================
-Sublime shorcuts subset
+# Sublime shorcuts subset
+
 Transpose(swap) words - make at least two selections through Ctrl, then Ctrl+T
 
 Go to anything Ctrl+P (uses fuzzy match - mpag will find mainPage)
@@ -169,7 +172,7 @@ Go to anything Ctrl+P (uses fuzzy match - mpag will find mainPage)
 Switch project instantly (recover previously opened files/tabs) Ctrl+Atl+P
 Go to line ctrl + G
 
-TOP SHORTCUTS
+## TOP SHORTCUTS
 Select line Ctrl + L (press muliple times to select more lines downwards)
 Open new line below Ctrl + Enter
 Open new line above Ctrl + Alt + Enter
@@ -191,9 +194,11 @@ cursor), use f3 and shift + f3 to move between occurences
 Less mouse, better productivity
 
 =============================
-Python - object oriented
+# Python - object oriented
 
-Data encapsulation
+__name__ inside class gives still name of module, NOT the name of class
+
+## Data encapsulation
 
 When creating class, think about attributes:
 - users need to access it, make it public self.x
@@ -202,21 +207,21 @@ When creating class, think about attributes:
 the need to change interface
 
 Do NOT use explicit getter or setter funcs but be Pythonic and use property
-...
-self.x = x
 
-@property
-def x(self):
-    return self.__x
+    self.x = x
 
-@x.setter
-def x(self, val):
-    if val < 0:
-        val = 0
-    self.__x = vav
+    @property
+    def x(self):
+        return self.__x
 
-myObj.x
-myObj.x = -10
+    @x.setter
+    def x(self, val):
+        if val < 0:
+            val = 0
+        self.__x = vav
+
+    myObj.x
+    myObj.x = -10
 
 Attribute types
 - public
@@ -226,24 +231,21 @@ Attribute types
 Switch statement (or cascaded if-else)
 Pythonic way is to use hash table - much better and elegant
 
-========================
-GUI
-
-To have resposive GUI, every operation should run as a thread so
-GUI remains responsive all the time. However, Tkinter GUI should not be
-updated from non-main thread since Tkinter is not thread-safe and may lead to
-unexpected behaviour / crash. Worker thread should communicate changes to main
-thread via other mechanism like class Queue etc.
-
-Any running function blocks GUI waiting to take over control again.
-
 ====================
-Programming best practices
+# Programming best practices
 
-Always initliaze from data - meaning to init function vars from data given
-rather than buidling own arbitrary data
+## Always initialize from data
+Meaning to init function vars from data given rather than building own
+arbitrary data
 
-TDD - very interesting concept that may use python's assert. This idea building tests beforehand helps to prevent issues of missed edge cases. It also nicely documents function API and its correct use. Not to mentiong possibility of running unit tests to ensure no regression.
+## TDD
+**Very interesting concept that may use python's assert.**
+
+At least, I should write few test for each black box - function etc. !!
+
+This idea building tests beforehand helps to prevent issues of missed edge
+cases. It also nicely documents function API and its correct use. Not to
+mention possibility of running unit tests to ensure no regression.
 
 http://swcarpentry.github.io/python-novice-inflammation/08-defensive.html
 
@@ -258,7 +260,8 @@ def test_range_overlap():
 
 Function parameters will become local variable
 
-Enclosing scope - inner function has access to variables in outer function, at least read and sometimes modify access
+Enclosing scope - inner function has access to variables in outer function, at
+least read and sometimes modify access
 
 ## Python auto-complete
 Autocomplete works fine for object created directly from class. However, it
@@ -278,3 +281,15 @@ However, it will work fine when you tell IDE what kind of class is the object.
     assert isinstance(obj, 'className')
 
 3. Next line after assert should give all suggestions
+
+========================================
+# BeautifulSoup
+
+.next_elements
+will walk through all elements sequencially including nested too
+
+parsers
+- html.parser is not a good one since it does not handle nicely self-closed
+elements
+- lxml parser is best from supported
+
