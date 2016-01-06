@@ -99,8 +99,34 @@ Any running function blocks GUI waiting to take over control again.
 =================================
 # Python design rules
 
+## Best approach to pass args between functions, methods
+
+As I learnt, it is very annoying to pass arguments between functions as it
+often happens mutliple times as you refactor code to smaller blocks. You'll
+never know how to ideally split program so iterative development is
+unavoidable.
+
+So, here what have worked best for me.
+
+1. OO
+Sooner or later (usually latter), I had to move to OO for easy and unified
+access to variables shared throughout the code. It gives me flexibility to get
+variable from any function - be it now or in the future.
+
+2. Global vars
+Small functionality can be isolated in single file / module which is later
+simply imported into the main app. I've yet to check this out but it might be
+fairly common in open source projects that are split into many modules, each
+with single purpose.
+
+3. Do NOT get fooled again into flooding function with parameters and better
+think what to prefer - OO or globals.
+
+## Functions
 Function should be a black box that gets values and returns other values,
-without relying on global vars
+without relying on global vars.
+
+This is arguable as per note above.
 
 ## Singleton
 
@@ -180,6 +206,7 @@ Cut and paste without indent Ctrl + X -> Ctrl + (Shift) + V
 
 Indent line Ctrl + [ or ]  , for block selection Ctrl + (Shift) + Tab
 Comment line Ctrl + /
+Select block (column) Shift + right mouse
 
 Quick movement
 move line ctrl + shift + up/down (no need to highlight)
@@ -231,6 +258,22 @@ Attribute types
 Switch statement (or cascaded if-else)
 Pythonic way is to use hash table - much better and elegant
 
+## Visual debugging with Lumpy
+
+Tool from Think Python that can:
+- show state diagram (showing program state at specific time when Lumpy called)
+- show class diagram - class structure, relationships
+
+You need two libs, Lumpy.py and Gui.py.
+
+    from Lumpy import Lumpy
+    lum = Lumpy()
+    lum.make_reference()
+    ...
+    lum.object_diagram()
+    lum.class_diagram()
+
+
 ====================
 # Programming best practices
 
@@ -260,8 +303,12 @@ def test_range_overlap():
 
 Function parameters will become local variable
 
-Enclosing scope - inner function has access to variables in outer function, at
-least read and sometimes modify access
+## Enclosing scope for nested function
+Nested (inner) function has access to variables in outer function, at least
+read and may have modify access for muttable var.
+
+Note this works only when nested function is defined INSIDE outer function
+through 'def', only calling function will not make it a *nested function*.
 
 ## Python auto-complete
 Autocomplete works fine for object created directly from class. However, it
@@ -281,6 +328,20 @@ However, it will work fine when you tell IDE what kind of class is the object.
     assert isinstance(obj, 'className')
 
 3. Next line after assert should give all suggestions
+
+## Python functions
+
+Functions are first-class **objects** and thus allow:
+- assign func to var
+- define func inside another func
+- pass func as arg
+- func can return another func
+
+function waiter(meal):
+    return "Here is your "+meal
+
+susan = waiter
+susan('brocoli')
 
 ========================================
 # BeautifulSoup

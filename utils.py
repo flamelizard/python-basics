@@ -72,3 +72,10 @@ def simple_bubble_sort(lst):
 # lst = generate_random_numbers(100, 40)
 # print simple_bubble_sort(lst)
 # print bubble_sort2(lst)
+
+def dump_to_file(filepath, txt, mode='a+'):
+    try:
+        with open(filepath, mode) as fp:
+            fp.write(txt)
+    except IOError:
+        print 'File %s not found' % filepath

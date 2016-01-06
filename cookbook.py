@@ -1,12 +1,39 @@
 """Collection of recipes and best practices from any domain"""
 
-
+"""Operations on sequence"""
 def shift_to_range(v, r):
     try:
         # +1 for range 1 <= x <= r
         return (v % r) + 1
     except TypeError:
         return None
+
+"""Circular shift aka bitwise rotation
+
+Simple pattern how to shift either from 1st to last position or the other way
+around. Each loop shifts all numbers by one. When loops equals to tuple size,
+it will be in original order.
+
+Learnt in Think Java, when comparing card ranks.
+"""
+
+def circular_shift(nums, loops=1, leftwise=True):
+    """
+    :loops number of circular shift runs on the sequence
+    :leftwise preset shift direction
+    """
+    if loops == 0:
+        return nums
+    res = []
+    for num in nums:
+        _num = (num+1) if leftwise else (num-1)
+        res.append(_num % len(nums))
+    print "[circular]", res
+    return circular_shift(res, loops-1, leftwise)
+
+# nums = [0, 1, 2, 3]
+# circular_shift(nums)
+# circular_shift(nums, 4, False)
 
 """Sorting and algorithms"""
 
@@ -109,3 +136,66 @@ def test_bisect():
         print '[right] for %s' % val, bisect.bisect_right(seq, val)
         print '-' * 10
 # test_bisect()
+
+"""String operations"""
+
+def format_text(text):
+    print '{0:{fill}{align}{len}}'.format(text, fill='_', align='>', len=10)
+# format_text('bob')
+
+def split_list(lst, step):
+    """Split list into sub-lists
+
+    :step lenght of sublist
+    """
+    sub_lst = []
+    return [lst[i:i+step] for i in xrange(0, len(lst)-1, step)]
+# print split_list(lst, 8)
+
+# Simple cache implemented through class decorator and dict
+# Boost fibonnaci perf tremendously
+class memoize:
+    """Cache func results in dict"""
+    def __init__(self, func):
+        self.mem = {}
+        self.func = func
+
+    def __call__(self, n):
+        try:
+            return self.mem[n]
+        except KeyError:
+            self.mem[n] = self.func(n)
+            return self.mem[n]
+
+"""Caching"""
+
+@memoize
+def fib(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fib(n-1) + fib(n-2)
+
+def fib_seq(n):
+    seq = [ ]
+    if n > 0:
+        seq.extend(fib_seq(n-1))
+    seq.append((fib(n), 'n={}'.format(n)))
+    return seq
+# cProfile.run('print fib_seq(10)')
+
+"""Inspector"""
+
+def print_attrib(o):
+    """Print nicely formattted object attributes, name <-> value"""
+    lst = []
+    for attr in dir(o):
+        try:
+            val = str(getattr(o, attr))
+            lst.append((attr, val))
+        except AttributeError:
+            pass
+    for attr, val in lst:
+        print '%s -> %s' % (attr, val)
